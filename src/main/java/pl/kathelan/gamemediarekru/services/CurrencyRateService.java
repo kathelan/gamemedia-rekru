@@ -23,6 +23,7 @@ public class CurrencyRateService {
     @Async
     public CompletableFuture<CurrencyRatesResponse> getRates(String baseCurrency, List<String> filters) {
         log.info("Fetching rates for base currency: {} with filters: {}", baseCurrency, filters);
+        log.info("Running in thread: {}", Thread.currentThread().getName());
 
         List<String> symbols = filters.stream()
                 .map(filter -> {

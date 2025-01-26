@@ -4,7 +4,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import pl.kathelan.gamemediarekru.dtos.CurrencyRatesResponse;
+import pl.kathelan.gamemediarekru.dtos.ExchangeRequest;
+import pl.kathelan.gamemediarekru.dtos.ExchangeResponse;
 import pl.kathelan.gamemediarekru.services.CurrencyRateService;
+import pl.kathelan.gamemediarekru.services.ExchangeService;
 
 import java.util.List;
 
@@ -13,6 +16,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class CurrencyRateController {
     private final CurrencyRateService currencyRateService;
+    private final ExchangeService exchangeService;
 
 
     @GetMapping("/{currency}")
@@ -23,8 +27,9 @@ public class CurrencyRateController {
         return ResponseEntity.ok(rates);
     }
 
-//    @PostMapping("/exchange")
-//    public ResponseEntity<ExchangeResult> exchange(@RequestBody ExchangeRequest exchangeRequest) {
-//        return ResponseEntity.ok().build();
-//    }
+    @PostMapping("/exchange")
+    public ResponseEntity<ExchangeResponse> exchange(@RequestBody ExchangeRequest exchangeRequest) {
+        ExchangeResponse response = exchangeService.calculateExchange(exchangeRequest);
+        return ResponseEntity.ok(response);
+    }
 }

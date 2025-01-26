@@ -50,3 +50,39 @@ Example response:
 - Implementacja w języku Java lub Scala.
 - Sprawdzić poprawność rozwiązania.
   *Lista przewalutowań wyliczona w wątkach, będzie dodatkowym atutem.
+
+
+### Testy:
+#### GET http://localhost:8080/currencies/BTC?filter[]=USDT&filter[]=ETH
+#### Content-Type: application/json
+response:
+{
+"source": "BTC",
+"rates": {
+"ETH": "0.03180000",
+"USDT": "105072.49000000"
+}
+}
+#### POST http://localhost:8080/currencies/exchange
+#### Content-Type: application/json
+#### req :{"from": "BTC","to": ["PLN", "EUR"],"amount": 100}
+
+response: {
+"from": "BTC",
+"exchanges": {
+"PLN": {
+"rate": 423969.0,
+"amount": 100.0,
+"result": 41972931.0000,
+"fee": 1.000
+},
+"EUR": {
+"rate": 100147.2,
+"amount": 100.0,
+"result": 9914572.8000,
+"fee": 1.000
+}
+}
+}
+
+

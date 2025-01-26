@@ -25,26 +25,24 @@ public class CurrencyRateService {
         log.info("Fetching rates for base currency: {} with filters: {}", baseCurrency, filters);
         log.info("Running in thread: {}", Thread.currentThread().getName());
 
-        List<String> symbols = filters.stream()
-                .map(filter -> {
-                    if (CurrencyType.QUOTE.isQuoteCurrency(filter)) {
-                        return baseCurrency + filter;
-                    } else {
-                        return filter + baseCurrency;
-                    }
-                })
-                .toList();
-
-        Map<String, String> rates = symbols.stream()
-                .map(symbol -> {
+        List<CompletableFuture<Map.Entry<String, String>>> futures = filters.stream()
+                .map(filter -> CompletableFuture.supplyAsync(() -> {
+                    String symbol = CurrencyType.QUOTE.isQuoteCurrency(filter)
+                            ? baseCurrency + filter
+                            : filter + baseCurrency;
                     try {
                         Map<String, String> response = binanceClient.getRates(symbol);
-                        return Map.entry(symbol.replace(baseCurrency, ""), response.get("price"));
+                        String rate = response.get("price");
+                        return Map.entry(filter, rate);
                     } catch (Exception e) {
                         log.error("Failed to fetch rate for symbol: {}", symbol, e);
                         return null;
                     }
-                })
+                }))
+                .toList();
+
+        Map<String, String> rates = futures.stream()
+                .map(CompletableFuture::join)
                 .filter(Objects::nonNull)
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 

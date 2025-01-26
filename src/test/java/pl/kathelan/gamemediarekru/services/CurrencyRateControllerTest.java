@@ -1,12 +1,14 @@
 package pl.kathelan.gamemediarekru.services;
 
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import pl.kathelan.gamemediarekru.controllers.CurrencyRateController;
 import pl.kathelan.gamemediarekru.dtos.CurrencyExchangeDetails;
 import pl.kathelan.gamemediarekru.dtos.CurrencyRatesResponse;
@@ -18,7 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
-import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -53,6 +55,9 @@ class CurrencyRateControllerTest {
 
     @Test
     void shouldFetchCurrencyRates() throws Exception {
+        CurrencyRateService localCurrencyRateService = mock(CurrencyRateService.class);
+        MockMvc localMockMvc = MockMvcBuilders.standaloneSetup(new CurrencyRateController(localCurrencyRateService, exchangeService)).build();
+
         // Given
         String baseCurrency = "BTC";
         List<String> filters = List.of("USDT", "ETH");
@@ -62,11 +67,12 @@ class CurrencyRateControllerTest {
                 Map.of("USDT", "1.0", "ETH", "0.05")
         );
 
-        when(currencyRateService.getRates(baseCurrency, filters))
-                .thenReturn(CompletableFuture.completedFuture(mockResponse));
+        Mockito.doReturn(CompletableFuture.completedFuture(mockResponse))
+                .when(localCurrencyRateService)
+                .getRates(baseCurrency, filters);
 
         // When & Then
-        mockMvc.perform(get("/currencies/{currency}", baseCurrency)
+        localMockMvc.perform(get("/currencies/{currency}", baseCurrency)
                         .param("filter", "USDT")
                         .param("filter", "ETH")
                         .contentType(MediaType.APPLICATION_JSON))
